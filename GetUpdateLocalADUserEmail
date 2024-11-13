@@ -1,0 +1,44 @@
+internal static bool GetUpdateLocalADUserEmail(SqlConnection objConn)
+        {
+            string EmployeeId = 1;
+            string UpadteEmail = "mori123@gmail.com";
+
+            using (var context = new PrincipalContext(ContextType.Domain, Domain, Container))
+            {
+                var principal = new UserPrincipal(context)
+                {
+                    //EmailAddress = umcEmail,
+                    //Surname = userDT.Rows[i]["LastName"].ToString()
+                    Surname = "Rick", //find by username
+                };
+                using (var searcher = new PrincipalSearcher(principal))
+                {
+                    PrincipalSearchResult<Principal> result = searcher.FindAll();
+                    int userCount = result.Count();
+
+                    Console.WriteLine($"Number of users found with name {displaName}: {userCount}");
+
+                    if (userCount > 1)
+                    {
+                        // Log if multiple users found
+                        Console.WriteLine("Multiple users found.");
+                        foreach (Principal item in result)
+                        {
+                            UserPrincipal usr = (UserPrincipal)item;
+                            DirectoryEntry entry = usr.GetUnderlyingObject() as DirectoryEntry;
+                            if (entry != null)
+                            {
+                                //If same username multiple user found, check with employee id
+                                if (Convert.ToString(entry.Properties["EmployeeId"].Value) == EmployeeId)
+                                {
+                                    //email update on local AD
+                                    usr.EmailAddress = UpadteEmail;
+                                    usr.Save();
+
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
